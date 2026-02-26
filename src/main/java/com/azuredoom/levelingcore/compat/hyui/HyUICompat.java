@@ -161,10 +161,6 @@ public class HyUICompat {
                     "strength",
                     CommandLang.STR.param("points", levelService.getStr(uuid)).getAnsiMessage()
                 );
-                template.setVariable(
-                    "strength_addition",
-                    (int) (1 * config.get().getStrStatMultiplier() * levelService.getStr(playerRef.getUuid()))
-                );
                 ctx.updatePage(false);
             })
             .addEventListener("AddStr5", CustomUIEventBindingType.Activating, (data, ctx) -> {
@@ -184,10 +180,6 @@ public class HyUICompat {
                     "strength",
                     CommandLang.STR.param("points", StatsUtils.formatXp(levelService.getStr(uuid))).getAnsiMessage()
                 );
-                template.setVariable(
-                    "strength_addition",
-                    (int) (1 * config.get().getStrStatMultiplier() * levelService.getStr(playerRef.getUuid()))
-                );
                 ctx.updatePage(false);
             })
             .addEventListener("AddAgi", CustomUIEventBindingType.Activating, (data, ctx) -> {
@@ -195,16 +187,17 @@ public class HyUICompat {
                     return;
                 levelService.setAgi(uuid, levelService.getAgi(uuid) + 1);
                 levelService.useAbilityPoints(uuid, 1);
-
+                // Level / 2 * ( 1 + AGI * 0.01 )
+                var staminaMod = levelService.getLevel(uuid) / 2f * ( 1 + levelService.getAgi(uuid) * 0.01f);
                 var staminaModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
+                    staminaMod
                 );
                 var oxygenModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
+                    staminaMod
                 );
                 playerStatMap.putModifier(staminaIndex, staminaModifierKey, staminaModifier);
                 playerStatMap.putModifier(oxygenIndex, oxygenModifierKey, oxygenModifier);
@@ -223,10 +216,6 @@ public class HyUICompat {
                     "playerStaminaMax",
                     StatsUtils.formatXp(playerStatMap.get(staminaIndex).getMax())
                 );
-                template.setVariable(
-                    "agility_addition",
-                    (int) (1 * config.get().getAgiStatMultiplier() * levelService.getAgi(playerRef.getUuid()))
-                );
                 ctx.updatePage(true);
             })
             .addEventListener("AddAgi5", CustomUIEventBindingType.Activating, (data, ctx) -> {
@@ -237,15 +226,17 @@ public class HyUICompat {
                 levelService.setAgi(uuid, levelService.getAgi(uuid) + 5);
                 levelService.useAbilityPoints(uuid, 5);
 
+                // Level / 2 * ( 1 + AGI * 0.01 )
+                var staminaMod = levelService.getLevel(uuid) / 2f * ( 1 + levelService.getAgi(uuid) * 0.01f);
                 var staminaModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
+                    staminaMod
                 );
                 var oxygenModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
+                    staminaMod
                 );
                 playerStatMap.putModifier(staminaIndex, staminaModifierKey, staminaModifier);
                 playerStatMap.putModifier(oxygenIndex, oxygenModifierKey, oxygenModifier);
@@ -268,10 +259,6 @@ public class HyUICompat {
                     "playerStaminaMax",
                     StatsUtils.formatXp(playerStatMap.get(staminaIndex).getMax())
                 );
-                template.setVariable(
-                    "agility_addition",
-                    (int) (1 * config.get().getAgiStatMultiplier() * levelService.getAgi(playerRef.getUuid()))
-                );
                 ctx.updatePage(false);
             })
             .addEventListener("AddPer", CustomUIEventBindingType.Activating, (data, ctx) -> {
@@ -284,10 +271,6 @@ public class HyUICompat {
                 template.setVariable(
                     "perception",
                     CommandLang.PER.param("points", levelService.getPer(uuid)).getAnsiMessage()
-                );
-                template.setVariable(
-                    "perception_addition",
-                    (int) (1 * config.get().getPerStatMultiplier() * levelService.getPer(playerRef.getUuid()))
                 );
                 ctx.updatePage(false);
             })
@@ -308,10 +291,6 @@ public class HyUICompat {
                     "perception",
                     CommandLang.PER.param("points", StatsUtils.formatXp(levelService.getPer(uuid))).getAnsiMessage()
                 );
-                template.setVariable(
-                    "perception_addition",
-                    (int) (1 * config.get().getPerStatMultiplier() * levelService.getPer(playerRef.getUuid()))
-                );
                 ctx.updatePage(false);
             })
             .addEventListener("AddVit", CustomUIEventBindingType.Activating, (data, ctx) -> {
@@ -319,10 +298,12 @@ public class HyUICompat {
                     return;
                 levelService.setVit(uuid, levelService.getVit(uuid) + 1);
                 levelService.useAbilityPoints(uuid, 1);
+                // ( Level * 10 + ( Level / 2 )) * ( 1 + VIT * 0.01 )
+                var healthMod = (levelService.getLevel(uuid) * 10 + ( levelService.getLevel(uuid) / 2 )) * ( 1 + levelService.getVit(uuid) * 0.01f);
                 var healthModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getVit(uuid) * config.get().getVitStatMultiplier()
+                    healthMod
                 );
                 playerStatMap.putModifier(healthIndex, healthModifierKey, healthModifier);
                 playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getHealth());
@@ -340,10 +321,6 @@ public class HyUICompat {
                     "playerHealthMax",
                     StatsUtils.formatXp(playerStatMap.get(healthIndex).getMax())
                 );
-                template.setVariable(
-                    "playerHealthAddition",
-                    (int) (1 * config.get().getVitStatMultiplier() * levelService.getVit(playerRef.getUuid()))
-                );
                 ctx.updatePage(false);
             })
             .addEventListener("AddVit5", CustomUIEventBindingType.Activating, (data, ctx) -> {
@@ -353,10 +330,11 @@ public class HyUICompat {
 
                 levelService.setVit(uuid, levelService.getVit(uuid) + 5);
                 levelService.useAbilityPoints(uuid, 5);
+                var healthMod = (levelService.getLevel(uuid) * 10 + ( levelService.getLevel(uuid) / 2 )) * ( 1 + levelService.getVit(uuid) * 0.01f);
                 var healthModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getVit(uuid) * config.get().getVitStatMultiplier()
+                    healthMod
                 );
                 playerStatMap.putModifier(healthIndex, healthModifierKey, healthModifier);
                 playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getHealth());
@@ -378,10 +356,6 @@ public class HyUICompat {
                     "playerHealthMax",
                     StatsUtils.formatXp(playerStatMap.get(healthIndex).getMax())
                 );
-                template.setVariable(
-                    "playerHealthAddition",
-                    (int) (1 * config.get().getVitStatMultiplier() * levelService.getVit(playerRef.getUuid()))
-                );
                 ctx.updatePage(false);
             })
             .addEventListener("AddInt", CustomUIEventBindingType.Activating, (data, ctx) -> {
@@ -389,14 +363,14 @@ public class HyUICompat {
                     return;
                 levelService.setInt(uuid, levelService.getInt(uuid) + 1);
                 levelService.useAbilityPoints(uuid, 1);
+                // ( Level * 10 + ( Level / 2 )) * ( 1 + INT * 0.01 )
+                var manaMod = (levelService.getLevel(uuid) * 10 + ( levelService.getLevel(uuid) / 2 )) * ( 1 + levelService.getInt(uuid) * 0.01f);
                 var manaModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getInt(uuid) * config.get().getIntStatMultiplier()
+                    manaMod
                 );
                 playerStatMap.putModifier(manaIndex, manaModifierKey, manaModifier);
-                var manaRegen = (int) Math.max(1, Math.floor(1 + (levelService.getInt(uuid) * 0.25)));
-                playerStatMap.addStatValue(manaIndex, manaRegen);
                 playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getMana());
                 template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
                 template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
@@ -409,10 +383,6 @@ public class HyUICompat {
                     "playerManaMax",
                     StatsUtils.formatXp(playerStatMap.get(manaIndex).getMax())
                 );
-                template.setVariable(
-                    "intelligence_addition",
-                    (int) (1 * config.get().getIntStatMultiplier() * levelService.getInt(playerRef.getUuid()))
-                );
                 ctx.updatePage(false);
             })
             .addEventListener("AddInt5", CustomUIEventBindingType.Activating, (data, ctx) -> {
@@ -422,14 +392,14 @@ public class HyUICompat {
 
                 levelService.setInt(uuid, levelService.getInt(uuid) + 5);
                 levelService.useAbilityPoints(uuid, 5);
+                // ( Level * 10 + ( Level / 2 )) * ( 1 + INT * 0.01 )
+                var manaMod = (levelService.getLevel(uuid) * 10 + ( levelService.getLevel(uuid) / 2 )) * ( 1 + levelService.getInt(uuid) * 0.01f);
                 var manaModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getInt(uuid) * config.get().getIntStatMultiplier()
+                    manaMod
                 );
                 playerStatMap.putModifier(manaIndex, manaModifierKey, manaModifier);
-                var manaRegen = (int) Math.max(1, Math.floor(1 + (levelService.getInt(uuid) * 0.25)));
-                playerStatMap.addStatValue(manaIndex, manaRegen);
                 playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getMana());
 
                 int newPoints = levelService.getAvailableAbilityPoints(uuid);
@@ -447,10 +417,6 @@ public class HyUICompat {
                     "playerManaMax",
                     StatsUtils.formatXp(playerStatMap.get(manaIndex).getMax())
                 );
-                template.setVariable(
-                    "intelligence_addition",
-                    (int) (1 * config.get().getIntStatMultiplier() * levelService.getInt(playerRef.getUuid()))
-                );
                 ctx.updatePage(false);
             })
             .addEventListener("AddCon", CustomUIEventBindingType.Activating, (data, ctx) -> {
@@ -463,10 +429,6 @@ public class HyUICompat {
                 template.setVariable(
                     "constitution",
                     CommandLang.CON.param("points", levelService.getCon(uuid)).getAnsiMessage()
-                );
-                template.setVariable(
-                    "constitution_addition",
-                    (int) (1 * config.get().getConStatMultiplier() * levelService.getCon(playerRef.getUuid()))
                 );
                 ctx.updatePage(false);
             })
@@ -486,10 +448,6 @@ public class HyUICompat {
                 template.setVariable(
                     "constitution",
                     CommandLang.CON.param("points", StatsUtils.formatXp(levelService.getCon(uuid))).getAnsiMessage()
-                );
-                template.setVariable(
-                    "constitution_addition",
-                    (int) (1 * config.get().getConStatMultiplier() * levelService.getCon(playerRef.getUuid()))
                 );
                 ctx.updatePage(false);
             })
