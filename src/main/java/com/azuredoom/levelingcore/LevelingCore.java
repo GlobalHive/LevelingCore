@@ -2,7 +2,6 @@ package com.azuredoom.levelingcore;
 
 import com.hypixel.hytale.common.plugin.PluginIdentifier;
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
@@ -15,8 +14,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.*;
 import javax.annotation.Nonnull;
 
@@ -44,12 +41,8 @@ import com.azuredoom.levelingcore.level.rewards.LevelRewards;
 import com.azuredoom.levelingcore.level.rewards.RewardEntry;
 import com.azuredoom.levelingcore.level.stats.StatsPerLevelMapping;
 import com.azuredoom.levelingcore.level.xp.XPValues;
-import com.azuredoom.levelingcore.systems.damage.MobDamageFilter;
-import com.azuredoom.levelingcore.systems.damage.PlayerDamageFilter;
 import com.azuredoom.levelingcore.systems.level.LevelDownTickingSystem;
 import com.azuredoom.levelingcore.systems.level.LevelUpTickingSystem;
-import com.azuredoom.levelingcore.systems.level.MobLevelSystem;
-import com.azuredoom.levelingcore.systems.nameplate.ShowLvlHeadSystem;
 import com.azuredoom.levelingcore.systems.xp.GainXPEventSystem;
 import com.azuredoom.levelingcore.systems.xp.LossXPEventSystem;
 import com.azuredoom.levelingcore.ui.hud.XPBarHud;
@@ -180,8 +173,8 @@ public class LevelingCore extends JavaPlugin {
                     HudPlayerReady.ready(playerReadyEvent, config);
                 })
             );
-        this.getEntityStoreRegistry().registerSystem(new PlayerDamageFilter(config));
-        this.getEntityStoreRegistry().registerSystem(new MobDamageFilter(config));
+        // this.getEntityStoreRegistry().registerSystem(new PlayerDamageFilter(config));
+        // this.getEntityStoreRegistry().registerSystem(new MobDamageFilter(config));
         // Cleans up various weak hash maps and UI on player disconnect
         this.getEventRegistry()
             .registerGlobal(PlayerDisconnectEvent.class, (event) -> {
@@ -190,24 +183,14 @@ public class LevelingCore extends JavaPlugin {
                 LevelDownListenerRegistrar.clear(event.getPlayerRef().getUuid());
             });
 
-        var showLvlHeadSystem = new ShowLvlHeadSystem(config);
-        var scheduled =
-            HytaleServer.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(
-                showLvlHeadSystem,
-                0L,
-                250L,
-                TimeUnit.MILLISECONDS
-            );
-        var task = new CompletableFuture<Void>() {
-
-            @Override
-            public boolean cancel(boolean mayInterruptIfRunning) {
-                scheduled.cancel(mayInterruptIfRunning);
-                return super.cancel(mayInterruptIfRunning);
-            }
-        };
-        this.getTaskRegistry().registerTask(task);
-        LevelingCore.mobLevelPersistence.load();
+        /*
+         * var showLvlHeadSystem = new ShowLvlHeadSystem(config); var scheduled =
+         * HytaleServer.SCHEDULED_EXECUTOR.scheduleWithFixedDelay( showLvlHeadSystem, 0L, 250L, TimeUnit.MILLISECONDS );
+         * var task = new CompletableFuture<Void>() {
+         * @Override public boolean cancel(boolean mayInterruptIfRunning) { scheduled.cancel(mayInterruptIfRunning);
+         * return super.cancel(mayInterruptIfRunning); } }; this.getTaskRegistry().registerTask(task);
+         * LevelingCore.mobLevelPersistence.load();
+         */
     }
 
     /**
@@ -219,7 +202,7 @@ public class LevelingCore extends JavaPlugin {
      */
     @Override
     protected void shutdown() {
-        LevelingCore.mobLevelPersistence.save();
+        // LevelingCore.mobLevelPersistence.save();
         super.shutdown();
         LOGGER.at(Level.INFO).log("Leveling Core shutting down");
         try {
@@ -264,7 +247,7 @@ public class LevelingCore extends JavaPlugin {
     }
 
     public void registerAllSystems() {
-        getEntityStoreRegistry().registerSystem(new MobLevelSystem(config));
+        // getEntityStoreRegistry().registerSystem(new MobLevelSystem(config));
         getEntityStoreRegistry().registerSystem(new LevelUpTickingSystem(config));
         getEntityStoreRegistry().registerSystem(new LevelDownTickingSystem(config));
         getEntityStoreRegistry().registerSystem(new GainXPEventSystem(config));
