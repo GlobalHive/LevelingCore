@@ -21,7 +21,8 @@ import com.azuredoom.levelingcore.utils.StatsUtils;
 
 public class HyUICompat {
 
-    private HyUICompat() {}
+    private HyUICompat() {
+    }
 
     public static void showStats(PlayerRef playerRef, Store<EntityStore> store, Ref<EntityStore> ref) {
         var levelService = LevelingCoreApi.getLevelServiceIfPresent().orElse(null);
@@ -34,7 +35,7 @@ public class HyUICompat {
         var config = LevelingCore.getConfig();
         var currentXp = levelService.getXp(uuid) - levelService.getXpForLevel(currentLevel);
         var xpForNextLevel = levelService.getXpForLevel(levelService.getLevel(uuid) + 1) - levelService.getXpForLevel(
-            currentLevel
+                currentLevel
         );
         var percentage = (float) currentXp / xpForNextLevel * 100;
         var playerStatMap = store.ensureAndGetComponent(playerRef.getReference(), EntityStatMap.getComponentType());
@@ -48,336 +49,393 @@ public class HyUICompat {
         var manaModifierKey = "LevelingCore_mana_stat";
 
         var template = new TemplateProcessor()
-            .setVariable(
-                "playerHealth",
-                StatsUtils.formatXp(playerStatMap.get(healthIndex).get())
-            )
-            .setVariable(
-                "playerHealthMax",
-                StatsUtils.formatXp(playerStatMap.get(healthIndex).getMax())
-            )
-            .setVariable(
-                "playerStamina",
-                StatsUtils.formatXp(playerStatMap.get(staminaIndex).get())
-            )
-            .setVariable(
-                "playerStaminaMax",
-                StatsUtils.formatXp(playerStatMap.get(staminaIndex).getMax())
-            )
-            .setVariable("playerMana", StatsUtils.formatXp(playerStatMap.get(manaIndex).get()))
-            .setVariable(
-                "playerManaMax",
-                StatsUtils.formatXp(playerStatMap.get(manaIndex).getMax())
-            )
-            .setVariable("playerName", playerRef.getUsername())
-            .setVariable("playerLevel", CommandLang.SHOW_LEVEL.param("level", currentLevel).getAnsiMessage())
-            .setVariable(
-                "currentXp",
-                CommandLang.XP_NEEDED.param("currentXp", StatsUtils.formatXp(currentXp))
-                    .param("xpForNextLevel", StatsUtils.formatXp(xpForNextLevel))
-                    .param("percentage", String.format("%.1f", percentage))
-                    .getAnsiMessage()
-            )
-            .setVariable("ability_points", StatsUtils.formatXp(levelService.getAvailableAbilityPoints(uuid)))
-            .setVariable("available_points", levelService.getAvailableAbilityPoints(uuid))
-            .setVariable(
-                "strength",
-                CommandLang.STR.param("points", StatsUtils.formatXp(levelService.getStr(playerRef.getUuid())))
-                    .getAnsiMessage()
-            )
-            .setVariable("strength_desc", CommandLang.STR_DESC.getAnsiMessage())
-            .setVariable(
-                "agility",
-                CommandLang.AGI.param("points", StatsUtils.formatXp(levelService.getAgi(playerRef.getUuid())))
-                    .getAnsiMessage()
-            )
-            .setVariable("agility_desc", CommandLang.AGI_DESC.getAnsiMessage())
-            .setVariable(
-                "perception",
-                CommandLang.PER.param("points", StatsUtils.formatXp(levelService.getPer(playerRef.getUuid())))
-                    .getAnsiMessage()
-            )
-            .setVariable("perception_desc", CommandLang.PER_DESC.getAnsiMessage())
-            .setVariable(
-                "vitality",
-                CommandLang.VIT.param("points", StatsUtils.formatXp(levelService.getVit(playerRef.getUuid())))
-                    .getAnsiMessage()
-            )
-            .setVariable("vitality_desc", CommandLang.VIT_DESC.getAnsiMessage())
-            .setVariable(
-                "intelligence",
-                CommandLang.INT.param("points", StatsUtils.formatXp(levelService.getInt(playerRef.getUuid())))
-                    .getAnsiMessage()
-            )
-            .setVariable("intelligence_desc", CommandLang.INT_DESC.getAnsiMessage())
-            .setVariable(
-                "constitution",
-                CommandLang.CON.param("points", StatsUtils.formatXp(levelService.getCon(playerRef.getUuid())))
-                    .getAnsiMessage()
-            )
-            .setVariable("constitution_desc", CommandLang.CON_DESC.getAnsiMessage());
+                .setVariable(
+                        "playerHealth",
+                        StatsUtils.formatXp(playerStatMap.get(healthIndex).get())
+                )
+                .setVariable(
+                        "playerHealthMax",
+                        StatsUtils.formatXp(playerStatMap.get(healthIndex).getMax())
+                )
+                .setVariable("playerHealthAddition", (int) (1 * config.get().getVitStatMultiplier() * levelService.getVit(playerRef.getUuid())))
+                .setVariable(
+                        "playerStamina",
+                        StatsUtils.formatXp(playerStatMap.get(staminaIndex).get())
+                )
+                .setVariable(
+                        "playerStaminaMax",
+                        StatsUtils.formatXp(playerStatMap.get(staminaIndex).getMax())
+                )
+                .setVariable("playerStaminaAddition",  (int) (1 * config.get().getAgiStatMultiplier() * levelService.getAgi(playerRef.getUuid())))
+                .setVariable("playerMana", StatsUtils.formatXp(playerStatMap.get(manaIndex).get()))
+                .setVariable(
+                        "playerManaMax",
+                        StatsUtils.formatXp(playerStatMap.get(manaIndex).getMax())
+                )
+                .setVariable("playerManaAddition",  (int) (1 * config.get().getIntStatMultiplier() * levelService.getInt(playerRef.getUuid())))
+                .setVariable("playerName", playerRef.getUsername())
+                .setVariable("playerLevel", CommandLang.SHOW_LEVEL.param("level", currentLevel).getAnsiMessage())
+                .setVariable(
+                        "currentXp",
+                        CommandLang.XP_NEEDED.param("currentXp", StatsUtils.formatXp(currentXp))
+                                .param("xpForNextLevel", StatsUtils.formatXp(xpForNextLevel))
+                                .param("percentage", String.format("%.1f", percentage))
+                                .getAnsiMessage()
+                )
+                .setVariable("ability_points", StatsUtils.formatXp(levelService.getAvailableAbilityPoints(uuid)))
+                .setVariable("available_points", levelService.getAvailableAbilityPoints(uuid))
+                .setVariable(
+                        "strength",
+                        CommandLang.STR.param("points", StatsUtils.formatXp(levelService.getStr(playerRef.getUuid())))
+                                .getAnsiMessage()
+                )
+                .setVariable("strength_desc", CommandLang.STR_DESC.getAnsiMessage())
+                .setVariable("strength_addition", (int) (1 * config.get().getStrStatMultiplier() * levelService.getStr(playerRef.getUuid())))
+                .setVariable(
+                        "agility",
+                        CommandLang.AGI.param("points", StatsUtils.formatXp(levelService.getAgi(playerRef.getUuid())))
+                                .getAnsiMessage()
+                )
+                .setVariable("agility_desc", CommandLang.AGI_DESC.getAnsiMessage())
+                .setVariable("agility_addition", (int) (1 * config.get().getAgiStatMultiplier() * levelService.getAgi(playerRef.getUuid())))
+                .setVariable(
+                        "perception",
+                        CommandLang.PER.param("points", StatsUtils.formatXp(levelService.getPer(playerRef.getUuid())))
+                                .getAnsiMessage()
+                )
+                .setVariable("perception_desc", CommandLang.PER_DESC.getAnsiMessage())
+                .setVariable("perception_addition", (int) (1 * config.get().getPerStatMultiplier() * levelService.getPer(playerRef.getUuid())))
+                .setVariable(
+                        "vitality",
+                        CommandLang.VIT.param("points", StatsUtils.formatXp(levelService.getVit(playerRef.getUuid())))
+                                .getAnsiMessage()
+                )
+                .setVariable("vitality_desc", CommandLang.VIT_DESC.getAnsiMessage())
+                .setVariable(
+                        "intelligence",
+                        CommandLang.INT.param("points", StatsUtils.formatXp(levelService.getInt(playerRef.getUuid())))
+                                .getAnsiMessage()
+                )
+                .setVariable("intelligence_desc", CommandLang.INT_DESC.getAnsiMessage())
+                .setVariable("intelligence_addition", (int) (1 * config.get().getIntStatMultiplier() * levelService.getInt(playerRef.getUuid())))
+                .setVariable(
+                        "constitution",
+                        CommandLang.CON.param("points", StatsUtils.formatXp(levelService.getCon(playerRef.getUuid())))
+                                .getAnsiMessage()
+                )
+                .setVariable("constitution_desc", CommandLang.CON_DESC.getAnsiMessage())
+                .setVariable("constitution_addition", (int) (1 * config.get().getConStatMultiplier() * levelService.getCon(playerRef.getUuid())));
         PageBuilder.pageForPlayer(playerRef)
-            .loadHtml("Pages/LevelingCore/statspage.html", template)
-            .addEventListener("AddStr", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                if (levelService.getAvailableAbilityPoints(uuid) <= 0)
-                    return;
-                levelService.setStr(uuid, levelService.getStr(uuid) + 1);
-                levelService.useAbilityPoints(uuid, 1);
-                template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable(
-                    "strength",
-                    CommandLang.STR.param("points", levelService.getStr(uuid)).getAnsiMessage()
-                );
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddStr5", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                int points = levelService.getAvailableAbilityPoints(uuid);
-                if (points < 5)
-                    return;
+                .loadHtml("Pages/LevelingCore/statspage.html", template)
+                .addEventListener("AddStr", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    if (levelService.getAvailableAbilityPoints(uuid) <= 0)
+                        return;
+                    levelService.setStr(uuid, levelService.getStr(uuid) + 1);
+                    levelService.useAbilityPoints(uuid, 1);
+                    template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable(
+                            "strength",
+                            CommandLang.STR.param("points", levelService.getStr(uuid)).getAnsiMessage()
+                    );
+                    template.setVariable("strength_addition", (int) (1 * config.get().getStrStatMultiplier() * levelService.getStr(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .addEventListener("AddStr5", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    int points = levelService.getAvailableAbilityPoints(uuid);
+                    if (points < 5)
+                        return;
 
-                levelService.setStr(uuid, levelService.getStr(uuid) + 5);
-                levelService.useAbilityPoints(uuid, 5);
+                    levelService.setStr(uuid, levelService.getStr(uuid) + 5);
+                    levelService.useAbilityPoints(uuid, 5);
 
-                int newPoints = levelService.getAvailableAbilityPoints(uuid);
+                    int newPoints = levelService.getAvailableAbilityPoints(uuid);
 
-                template.setVariable("available_points", newPoints);
-                template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
+                    template.setVariable("available_points", newPoints);
+                    template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
 
-                template.setVariable(
-                    "strength",
-                    CommandLang.STR.param("points", StatsUtils.formatXp(levelService.getStr(uuid))).getAnsiMessage()
-                );
+                    template.setVariable(
+                            "strength",
+                            CommandLang.STR.param("points", StatsUtils.formatXp(levelService.getStr(uuid))).getAnsiMessage()
+                    );
+                    template.setVariable("strength_addition", (int) (1 * config.get().getStrStatMultiplier() * levelService.getStr(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .addEventListener("AddAgi", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    if (levelService.getAvailableAbilityPoints(uuid) <= 0)
+                        return;
+                    levelService.setAgi(uuid, levelService.getAgi(uuid) + 1);
+                    levelService.useAbilityPoints(uuid, 1);
 
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddAgi", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                if (levelService.getAvailableAbilityPoints(uuid) <= 0)
-                    return;
-                levelService.setAgi(uuid, levelService.getAgi(uuid) + 1);
-                levelService.useAbilityPoints(uuid, 1);
+                    var staminaModifier = new StaticModifier(
+                            Modifier.ModifierTarget.MAX,
+                            StaticModifier.CalculationType.ADDITIVE,
+                            levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
+                    );
+                    var oxygenModifier = new StaticModifier(
+                            Modifier.ModifierTarget.MAX,
+                            StaticModifier.CalculationType.ADDITIVE,
+                            levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
+                    );
+                    playerStatMap.putModifier(staminaIndex, staminaModifierKey, staminaModifier);
+                    playerStatMap.putModifier(oxygenIndex, oxygenModifierKey, oxygenModifier);
+                    playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getStamina());
+                    template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable(
+                            "agility",
+                            CommandLang.AGI.param("points", levelService.getAgi(uuid)).getAnsiMessage()
+                    );
+                    template.setVariable(
+                            "playerStamina",
+                            StatsUtils.formatXp(playerStatMap.get(staminaIndex).get())
+                    );
+                    template.setVariable(
+                            "playerStaminaMax",
+                            StatsUtils.formatXp(playerStatMap.get(staminaIndex).getMax())
+                    );
+                    template.setVariable("agility_addition", (int) (1 * config.get().getAgiStatMultiplier() * levelService.getAgi(playerRef.getUuid())));
+                    ctx.updatePage(true);
+                })
+                .addEventListener("AddAgi5", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    int points = levelService.getAvailableAbilityPoints(uuid);
+                    if (points < 5)
+                        return;
 
-                var staminaModifier = new StaticModifier(
-                    Modifier.ModifierTarget.MAX,
-                    StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
-                );
-                var oxygenModifier = new StaticModifier(
-                    Modifier.ModifierTarget.MAX,
-                    StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
-                );
-                playerStatMap.putModifier(staminaIndex, staminaModifierKey, staminaModifier);
-                playerStatMap.putModifier(oxygenIndex, oxygenModifierKey, oxygenModifier);
-                playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getStamina());
-                template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable(
-                    "agility",
-                    CommandLang.AGI.param("points", levelService.getAgi(uuid)).getAnsiMessage()
-                );
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddAgi5", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                int points = levelService.getAvailableAbilityPoints(uuid);
-                if (points < 5)
-                    return;
+                    levelService.setAgi(uuid, levelService.getAgi(uuid) + 5);
+                    levelService.useAbilityPoints(uuid, 5);
 
-                levelService.setAgi(uuid, levelService.getAgi(uuid) + 5);
-                levelService.useAbilityPoints(uuid, 5);
+                    var staminaModifier = new StaticModifier(
+                            Modifier.ModifierTarget.MAX,
+                            StaticModifier.CalculationType.ADDITIVE,
+                            levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
+                    );
+                    var oxygenModifier = new StaticModifier(
+                            Modifier.ModifierTarget.MAX,
+                            StaticModifier.CalculationType.ADDITIVE,
+                            levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
+                    );
+                    playerStatMap.putModifier(staminaIndex, staminaModifierKey, staminaModifier);
+                    playerStatMap.putModifier(oxygenIndex, oxygenModifierKey, oxygenModifier);
+                    playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getStamina());
 
-                var staminaModifier = new StaticModifier(
-                    Modifier.ModifierTarget.MAX,
-                    StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
-                );
-                var oxygenModifier = new StaticModifier(
-                    Modifier.ModifierTarget.MAX,
-                    StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getAgi(uuid) * config.get().getAgiStatMultiplier()
-                );
-                playerStatMap.putModifier(staminaIndex, staminaModifierKey, staminaModifier);
-                playerStatMap.putModifier(oxygenIndex, oxygenModifierKey, oxygenModifier);
-                playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getStamina());
+                    int newPoints = levelService.getAvailableAbilityPoints(uuid);
 
-                int newPoints = levelService.getAvailableAbilityPoints(uuid);
+                    template.setVariable("available_points", newPoints);
+                    template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
 
-                template.setVariable("available_points", newPoints);
-                template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
+                    template.setVariable(
+                            "agility",
+                            CommandLang.AGI.param("points", StatsUtils.formatXp(levelService.getAgi(uuid))).getAnsiMessage()
+                    );
+                    template.setVariable(
+                            "playerStamina",
+                            StatsUtils.formatXp(playerStatMap.get(staminaIndex).get())
+                    );
+                    template.setVariable(
+                            "playerStaminaMax",
+                            StatsUtils.formatXp(playerStatMap.get(staminaIndex).getMax())
+                    );
+                    template.setVariable("agility_addition", (int) (1 * config.get().getAgiStatMultiplier() * levelService.getAgi(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .addEventListener("AddPer", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    if (levelService.getAvailableAbilityPoints(uuid) <= 0)
+                        return;
+                    levelService.setPer(uuid, levelService.getPer(uuid) + 1);
+                    levelService.useAbilityPoints(uuid, 1);
+                    template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable(
+                            "perception",
+                            CommandLang.PER.param("points", levelService.getPer(uuid)).getAnsiMessage()
+                    );
+                    template.setVariable("perception_addition", (int) (1 * config.get().getPerStatMultiplier() * levelService.getPer(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .addEventListener("AddPer5", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    int points = levelService.getAvailableAbilityPoints(uuid);
+                    if (points < 5)
+                        return;
 
-                template.setVariable(
-                    "agility",
-                    CommandLang.AGI.param("points", StatsUtils.formatXp(levelService.getAgi(uuid))).getAnsiMessage()
-                );
+                    levelService.setPer(uuid, levelService.getPer(uuid) + 5);
+                    levelService.useAbilityPoints(uuid, 5);
 
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddPer", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                if (levelService.getAvailableAbilityPoints(uuid) <= 0)
-                    return;
-                levelService.setPer(uuid, levelService.getPer(uuid) + 1);
-                levelService.useAbilityPoints(uuid, 1);
-                template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable(
-                    "perception",
-                    CommandLang.PER.param("points", levelService.getPer(uuid)).getAnsiMessage()
-                );
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddPer5", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                int points = levelService.getAvailableAbilityPoints(uuid);
-                if (points < 5)
-                    return;
+                    int newPoints = levelService.getAvailableAbilityPoints(uuid);
 
-                levelService.setPer(uuid, levelService.getPer(uuid) + 5);
-                levelService.useAbilityPoints(uuid, 5);
+                    template.setVariable("available_points", newPoints);
+                    template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
 
-                int newPoints = levelService.getAvailableAbilityPoints(uuid);
+                    template.setVariable(
+                            "perception",
+                            CommandLang.PER.param("points", StatsUtils.formatXp(levelService.getPer(uuid))).getAnsiMessage()
+                    );
+                    template.setVariable("perception_addition", (int) (1 * config.get().getPerStatMultiplier() * levelService.getPer(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .addEventListener("AddVit", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    if (levelService.getAvailableAbilityPoints(uuid) <= 0)
+                        return;
+                    levelService.setVit(uuid, levelService.getVit(uuid) + 1);
+                    levelService.useAbilityPoints(uuid, 1);
+                    var healthModifier = new StaticModifier(
+                            Modifier.ModifierTarget.MAX,
+                            StaticModifier.CalculationType.ADDITIVE,
+                            levelService.getVit(uuid) * config.get().getVitStatMultiplier()
+                    );
+                    playerStatMap.putModifier(healthIndex, healthModifierKey, healthModifier);
+                    playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getHealth());
+                    template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable(
+                            "vitality",
+                            CommandLang.VIT.param("points", levelService.getVit(uuid)).getAnsiMessage()
+                    );
+                    template.setVariable(
+                            "playerHealth",
+                            StatsUtils.formatXp(playerStatMap.get(healthIndex).get())
+                    );
+                    template.setVariable(
+                            "playerHealthMax",
+                            StatsUtils.formatXp(playerStatMap.get(healthIndex).getMax())
+                    );
+                    template.setVariable("playerHealthAddition", (int) (1 * config.get().getVitStatMultiplier() * levelService.getVit(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .addEventListener("AddVit5", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    int points = levelService.getAvailableAbilityPoints(uuid);
+                    if (points < 5)
+                        return;
 
-                template.setVariable("available_points", newPoints);
-                template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
+                    levelService.setVit(uuid, levelService.getVit(uuid) + 5);
+                    levelService.useAbilityPoints(uuid, 5);
+                    var healthModifier = new StaticModifier(
+                            Modifier.ModifierTarget.MAX,
+                            StaticModifier.CalculationType.ADDITIVE,
+                            levelService.getVit(uuid) * config.get().getVitStatMultiplier()
+                    );
+                    playerStatMap.putModifier(healthIndex, healthModifierKey, healthModifier);
+                    playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getHealth());
 
-                template.setVariable(
-                    "perception",
-                    CommandLang.PER.param("points", StatsUtils.formatXp(levelService.getPer(uuid))).getAnsiMessage()
-                );
+                    int newPoints = levelService.getAvailableAbilityPoints(uuid);
 
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddVit", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                if (levelService.getAvailableAbilityPoints(uuid) <= 0)
-                    return;
-                levelService.setVit(uuid, levelService.getVit(uuid) + 1);
-                levelService.useAbilityPoints(uuid, 1);
-                var healthModifier = new StaticModifier(
-                    Modifier.ModifierTarget.MAX,
-                    StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getVit(uuid) * config.get().getVitStatMultiplier()
-                );
-                playerStatMap.putModifier(healthIndex, healthModifierKey, healthModifier);
-                playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getHealth());
-                template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable(
-                    "vitality",
-                    CommandLang.VIT.param("points", levelService.getVit(uuid)).getAnsiMessage()
-                );
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddVit5", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                int points = levelService.getAvailableAbilityPoints(uuid);
-                if (points < 5)
-                    return;
+                    template.setVariable("available_points", newPoints);
+                    template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
 
-                levelService.setVit(uuid, levelService.getVit(uuid) + 5);
-                levelService.useAbilityPoints(uuid, 5);
-                var healthModifier = new StaticModifier(
-                    Modifier.ModifierTarget.MAX,
-                    StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getVit(uuid) * config.get().getVitStatMultiplier()
-                );
-                playerStatMap.putModifier(healthIndex, healthModifierKey, healthModifier);
-                playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getHealth());
+                    template.setVariable(
+                            "vitality",
+                            CommandLang.VIT.param("points", StatsUtils.formatXp(levelService.getVit(uuid))).getAnsiMessage()
+                    );
+                    template.setVariable(
+                            "playerHealth",
+                            StatsUtils.formatXp(playerStatMap.get(healthIndex).get())
+                    );
+                    template.setVariable(
+                            "playerHealthMax",
+                            StatsUtils.formatXp(playerStatMap.get(healthIndex).getMax())
+                    );
+                    template.setVariable("playerHealthAddition", (int) (1 * config.get().getVitStatMultiplier() * levelService.getVit(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .addEventListener("AddInt", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    if (levelService.getAvailableAbilityPoints(uuid) <= 0)
+                        return;
+                    levelService.setInt(uuid, levelService.getInt(uuid) + 1);
+                    levelService.useAbilityPoints(uuid, 1);
+                    var manaModifier = new StaticModifier(
+                            Modifier.ModifierTarget.MAX,
+                            StaticModifier.CalculationType.ADDITIVE,
+                            levelService.getInt(uuid) * config.get().getIntStatMultiplier()
+                    );
+                    playerStatMap.putModifier(manaIndex, manaModifierKey, manaModifier);
+                    var manaRegen = (int) Math.max(1, Math.floor(1 + (levelService.getInt(uuid) * 0.25)));
+                    playerStatMap.addStatValue(manaIndex, manaRegen);
+                    playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getMana());
+                    template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable(
+                            "intelligence",
+                            CommandLang.INT.param("points", levelService.getInt(uuid)).getAnsiMessage()
+                    );
+                    template.setVariable("playerMana", StatsUtils.formatXp(playerStatMap.get(manaIndex).get()));
+                    template.setVariable(
+                            "playerManaMax",
+                            StatsUtils.formatXp(playerStatMap.get(manaIndex).getMax())
+                    );
+                    template.setVariable("intelligence_addition", (int) (1 * config.get().getIntStatMultiplier() * levelService.getInt(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .addEventListener("AddInt5", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    int points = levelService.getAvailableAbilityPoints(uuid);
+                    if (points < 5)
+                        return;
 
-                int newPoints = levelService.getAvailableAbilityPoints(uuid);
+                    levelService.setInt(uuid, levelService.getInt(uuid) + 5);
+                    levelService.useAbilityPoints(uuid, 5);
+                    var manaModifier = new StaticModifier(
+                            Modifier.ModifierTarget.MAX,
+                            StaticModifier.CalculationType.ADDITIVE,
+                            levelService.getInt(uuid) * config.get().getIntStatMultiplier()
+                    );
+                    playerStatMap.putModifier(manaIndex, manaModifierKey, manaModifier);
+                    var manaRegen = (int) Math.max(1, Math.floor(1 + (levelService.getInt(uuid) * 0.25)));
+                    playerStatMap.addStatValue(manaIndex, manaRegen);
+                    playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getMana());
 
-                template.setVariable("available_points", newPoints);
-                template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
+                    int newPoints = levelService.getAvailableAbilityPoints(uuid);
 
-                template.setVariable(
-                    "vitality",
-                    CommandLang.VIT.param("points", StatsUtils.formatXp(levelService.getVit(uuid))).getAnsiMessage()
-                );
+                    template.setVariable("available_points", newPoints);
+                    template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
 
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddInt", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                if (levelService.getAvailableAbilityPoints(uuid) <= 0)
-                    return;
-                levelService.setInt(uuid, levelService.getInt(uuid) + 1);
-                levelService.useAbilityPoints(uuid, 1);
-                var manaModifier = new StaticModifier(
-                    Modifier.ModifierTarget.MAX,
-                    StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getInt(uuid) * config.get().getIntStatMultiplier()
-                );
-                playerStatMap.putModifier(manaIndex, manaModifierKey, manaModifier);
-                var manaRegen = (int) Math.max(1, Math.floor(1 + (levelService.getInt(uuid) * 0.25)));
-                playerStatMap.addStatValue(manaIndex, manaRegen);
-                playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getMana());
-                template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable(
-                    "intelligence",
-                    CommandLang.INT.param("points", levelService.getInt(uuid)).getAnsiMessage()
-                );
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddInt5", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                int points = levelService.getAvailableAbilityPoints(uuid);
-                if (points < 5)
-                    return;
+                    template.setVariable(
+                            "intelligence",
+                            CommandLang.INT.param("points", levelService.getInt(uuid)).getAnsiMessage()
+                    );
 
-                levelService.setInt(uuid, levelService.getInt(uuid) + 5);
-                levelService.useAbilityPoints(uuid, 5);
-                var manaModifier = new StaticModifier(
-                    Modifier.ModifierTarget.MAX,
-                    StaticModifier.CalculationType.ADDITIVE,
-                    levelService.getInt(uuid) * config.get().getIntStatMultiplier()
-                );
-                playerStatMap.putModifier(manaIndex, manaModifierKey, manaModifier);
-                var manaRegen = (int) Math.max(1, Math.floor(1 + (levelService.getInt(uuid) * 0.25)));
-                playerStatMap.addStatValue(manaIndex, manaRegen);
-                playerStatMap.maximizeStatValue(EntityStatMap.Predictable.SELF, DefaultEntityStatTypes.getMana());
+                    template.setVariable("playerMana", StatsUtils.formatXp(playerStatMap.get(manaIndex).get()));
+                    template.setVariable(
+                            "playerManaMax",
+                            StatsUtils.formatXp(playerStatMap.get(manaIndex).getMax())
+                    );
+                    template.setVariable("intelligence_addition", (int) (1 * config.get().getIntStatMultiplier() * levelService.getInt(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .addEventListener("AddCon", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    if (levelService.getAvailableAbilityPoints(uuid) <= 0)
+                        return;
+                    levelService.setCon(uuid, levelService.getCon(uuid) + 1);
+                    levelService.useAbilityPoints(uuid, 1);
+                    template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
+                    template.setVariable(
+                            "constitution",
+                            CommandLang.CON.param("points", levelService.getCon(uuid)).getAnsiMessage()
+                    );
+                    template.setVariable("constitution_addition", (int) (1 * config.get().getConStatMultiplier() * levelService.getCon(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .addEventListener("AddCon5", CustomUIEventBindingType.Activating, (data, ctx) -> {
+                    int points = levelService.getAvailableAbilityPoints(uuid);
+                    if (points < 5)
+                        return;
 
-                int newPoints = levelService.getAvailableAbilityPoints(uuid);
+                    levelService.setCon(uuid, levelService.getCon(uuid) + 5);
+                    levelService.useAbilityPoints(uuid, 5);
 
-                template.setVariable("available_points", newPoints);
-                template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
+                    int newPoints = levelService.getAvailableAbilityPoints(uuid);
 
-                template.setVariable(
-                    "intelligence",
-                    CommandLang.INT.param("points", levelService.getInt(uuid)).getAnsiMessage()
-                );
+                    template.setVariable("available_points", newPoints);
+                    template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
 
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddCon", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                if (levelService.getAvailableAbilityPoints(uuid) <= 0)
-                    return;
-                levelService.setCon(uuid, levelService.getCon(uuid) + 1);
-                levelService.useAbilityPoints(uuid, 1);
-                template.setVariable("ability_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable("available_points", levelService.getAvailableAbilityPoints(uuid));
-                template.setVariable(
-                    "constitution",
-                    CommandLang.CON.param("points", levelService.getCon(uuid)).getAnsiMessage()
-                );
-                ctx.updatePage(false);
-            })
-            .addEventListener("AddCon5", CustomUIEventBindingType.Activating, (data, ctx) -> {
-                int points = levelService.getAvailableAbilityPoints(uuid);
-                if (points < 5)
-                    return;
-
-                levelService.setCon(uuid, levelService.getCon(uuid) + 5);
-                levelService.useAbilityPoints(uuid, 5);
-
-                int newPoints = levelService.getAvailableAbilityPoints(uuid);
-
-                template.setVariable("available_points", newPoints);
-                template.setVariable("ability_points", StatsUtils.formatXp(newPoints));
-
-                template.setVariable(
-                    "constitution",
-                    CommandLang.CON.param("points", StatsUtils.formatXp(levelService.getCon(uuid))).getAnsiMessage()
-                );
-
-                ctx.updatePage(false);
-            })
-            .enableAsyncImageLoading(true)
-            .enableRuntimeTemplateUpdates(true)
-            .open(store);
+                    template.setVariable(
+                            "constitution",
+                            CommandLang.CON.param("points", StatsUtils.formatXp(levelService.getCon(uuid))).getAnsiMessage()
+                    );
+                    template.setVariable("constitution_addition", (int) (1 * config.get().getConStatMultiplier() * levelService.getCon(playerRef.getUuid())));
+                    ctx.updatePage(false);
+                })
+                .enableAsyncImageLoading(true)
+                .enableRuntimeTemplateUpdates(true)
+                .open(store);
     }
 }

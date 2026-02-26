@@ -1,220 +1,251 @@
 <style>
     .player-grid {
-        flex-direction: row;
-        anchor-bottom: 10;
+    layout: top;
     }
     .stats_desc {
-        background-color: #b3b6ba;
+    background-color: #b3b6ba;
     }
     .box {
-        background-color: rgba(30, 45, 61, 0.5);
-        anchor-bottom: 10;
-    }
-    @MyButtonBg {
-        background-color: rgba(68, 118, 167);
-    }
-    @MyButtonBg5 {
-        background-color: rgba(68, 118, 167, 0.85);
+    background-color: rgba(30, 45, 61, 0.5);
+    anchor-bottom: 10;
     }
 </style>
 <div class="page-overlay">
-    <div class="decorated-container status-window" data-hyui-title="" style="anchor-width: 600; anchor-height: 630;">
-        <div class="container-title">
-            <p id="title" style="color: #ffffff; font-weight: bold; horizontal-align: center;">Status</p>
-        </div>
-        <div class="container-contents">
-            <div class="player-grid" style="align-items: left;">
-                <img class="dynamic-image" src="https://hyvatar.io/render/{{$playerName}}?size=64" style="anchor-width: 64; anchor-height: 64;" />
-                <div style="layout-mode: top">
-                    <p id="playerName" style="color: #FFD700; font-weight: bold; padding-left: 2;">{{$playerName}}</p>
-                    <p id="playerLevel" style="color: #FFD700; font-weight: bold; padding-left: 2;">{{$playerLevel}}</p>
-                    <p id="playerXP" style="color: #FFD700; font-weight: bold; padding-left: 2;">{{$currentXp}}</p>
-                    <p id="ability_points" style="color: #FFD700; font-weight: bold; padding-left: 2;">Available Stat Points: {{$ability_points}}</p>
+<div class="decorated-container status-window" data-hyui-title="{{$playerName}}"
+     style="anchor-width: 600; anchor-height: 665;">
+    <div class="container-contents">
+        <div style="layout: left; background-color: rgba(30, 45, 61, 0.5); anchor-bottom: 10;">
+            <div class="player-grid">
+                <p style="padding-left: 16; padding-top: 16; font-size: 20; font-weight: bold;">{{$playerLevel}}</p>
+                <p style="padding-left: 16; ">{{$currentXp}}</p>
+                <p style="padding-left: 16; ">Available Stat Points: {{$ability_points}}</p>
+            </div>
+            <p style="flex-weight:1"></p>
+            <div class="player-grid" style="anchor: 16">
+                <div style="layout: left;">
+                    <img src="Pages/LevelingCore/Health@2x.png" width="32" height="32"/>
+                    <p style="padding-right: 16; align: center;">Health: {{$playerHealth}}/{{$playerHealthMax}}</p>
                 </div>
-                <div style="layout-mode: top">
-                    <div style="layout-mode: left">
-                        <div>
-                            <img src="Pages/LevelingCore/health@2x.png" width="20" height="20" style="padding-left: 40"/>
-                        </div>
-                        <p id="health" style="font-weight: bold;horizontal-align: center;padding-left: 2;">Health: {{$playerHealth}}/{{$playerHealthMax}}</p>
-                    </div>
-                    <div style="layout-mode: left">
-                        <div>
-                            <img src="Pages/LevelingCore/stamina@2x.png" width="20" height="20" style="padding-left: 40"/>
-                        </div>
-                        <p id="mana" style="font-weight: bold;horizontal-align: center;padding-left: 2;">Stamina: {{$playerStamina}}/{{$playerStaminaMax}}</p>
-                    </div>
-                    <div style="layout-mode: left">
-                        <div>
-                            <img src="Pages/LevelingCore/mana@2x.png" width="20" height="20" style="padding-left: 40"/>
-                        </div>
-                        <p id="stamina" style="font-weight: bold;horizontal-align: center;padding-left: 2;">Mana: {{$playerMana}}/{{$playerManaMax}}</p>
-                    </div>
+                <div style="layout: left;">
+                    <img src="Pages/LevelingCore/Stamina@2x.png" width="32" height="32"/>
+                    <p style="padding-right: 16;  align: center;">Stamina: {{$playerStamina}}/{{$playerStaminaMax}}</p>
+                </div>
+                <div style="layout: left;">
+                    <img src="Pages/LevelingCore/Mana@2x.png" width="32" height="32"/>
+                    <p style="padding-right: 16; align: center;">Mana: {{$playerMana}}/{{$playerManaMax}}</p>
                 </div>
             </div>
-            <div class="box">
-                <div style="layout-mode: left">
-                    <div>
-                        <img src="Pages/LevelingCore/str@2x.png" width="48" height="48" style="padding-top: 10; padding-left: 10; padding-bottom: 10;"/>
+        </div>
+        <div class="box">
+            <div style="layout-mode: left">
+                <div style="background-color: rgba(22, 32, 43, 0.5) 2; anchor-height: 48; anchor-width: 48; anchor-left: 10; anchor-top: 10; anchor-bottom: 10;">
+                    <img src="Pages/LevelingCore/Str@2x.png" width="40" height="40"/>
+                </div>
+                <div style="layout-mode: top; flex-weight: 1;">
+                    <div style="layout: left;">
+                        <p style="padding-top: 10; padding-left: 10;">{{$strength}}</p>
+                        <p style="flex-weight:1"></p>
+                        <p style="padding-top: 10; font-size: 12; align: center; padding-right: 16; color: #87CE8B">
+                            +{{$strength_addition}}
+                        </p>
                     </div>
-                    <div style="layout-mode: top; background: #1e2d3d(0.5);">
-                        <p style="padding-left: 2; padding-top: 10; padding-left: 10">{{$strength}}</p>
-                        <p style="horizontal-align: center; padding-right: 20; padding-left: 10;">{{$strength_desc}}</p>
-                    </div>
+                    <p style="padding-right: 20; padding-left: 10;">{{$strength_desc}}</p>
                 </div>
                 <div style="layout-mode: right">
                     <button id="AddStr5"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg5"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 6; {{#if available_points < 5}}visibility: hidden;{{/if}}">
-                        <div style="layout-mode: top; horizontal-align: center; vertical-align: center;">
-                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">+</p>
-                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">5</p>
+                        <div style="layout-mode: top; align: center;">
+                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">
+                                +
+                            </p>
+                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">
+                                5
+                            </p>
                         </div>
                     </button>
                     <button id="AddStr"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 10; {{#if available_points <= 0}}visibility: hidden;{{/if}}">
                         <p style="horizontal-align: center; font-size: 30">+</p>
                     </button>
                 </div>
             </div>
-            <div class="box">
-                <div style="layout-mode: left">
-                    <div>
-                        <img src="Pages/LevelingCore/agi@2x.png" width="48" height="48" style="padding-top: 10; padding-left: 10; padding-bottom: 10;"/>
+        </div>
+        <div class="box">
+            <div style="layout-mode: left">
+                <div style="background-color: rgba(22, 32, 43, 0.5) 2; anchor-height: 48; anchor-width: 48; anchor-left: 10; anchor-top: 10; anchor-bottom: 10;">
+                    <img src="Pages/LevelingCore/Agi@2x.png" width="40" height="40"/>
+                </div>
+                <div style="layout-mode: top; flex-weight: 1;">
+                    <div style="layout: left;">
+                        <p style="padding-top: 10; padding-left: 10;">{{$agility}}</p>
+                        <p style="flex-weight:1"></p>
+                        <p style="padding-top: 10; font-size: 12; align: center; padding-right: 16; color: #87CE8B">
+                            +{{$agility_addition}}
+                        </p>
                     </div>
-                    <div style="layout-mode: top; background: #1e2d3d(0.5)">
-                        <p style="padding-left: 2; padding-top: 10; padding-left: 10">{{$agility}}</p>
-                        <p style="horizontal-align: center; padding-right: 20; padding-left: 10; padding-bottom: 10">{{$agility_desc}}</p>
-                    </div>
+                    <p style="padding-right: 20; padding-left: 10;">{{$agility_desc}}</p>
                 </div>
                 <div style="layout-mode: right">
                     <button id="AddAgi5"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg5"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 6; {{#if available_points < 5}}visibility: hidden;{{/if}}">
-                        <div style="layout-mode: top; horizontal-align: center; vertical-align: center;">
-                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">+</p>
-                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">5</p>
+                        <div style="layout-mode: top; align: center;">
+                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">
+                                +
+                            </p>
+                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">
+                                5
+                            </p>
                         </div>
                     </button>
                     <button id="AddAgi"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 10; {{#if available_points <= 0}}visibility: hidden;{{/if}}">
                         <p style="horizontal-align: center; font-size: 30">+</p>
                     </button>
                 </div>
             </div>
-            <div class="box">
-                <div style="layout-mode: left">
-                    <div>
-                        <img src="Pages/LevelingCore/per@2x.png" width="48" height="48" style="padding-top: 10; padding-left: 10; padding-bottom: 10;"/>
+        </div>
+        <div class="box">
+            <div style="layout-mode: left">
+                <div style="background-color: rgba(22, 32, 43, 0.5) 2; anchor-height: 48; anchor-width: 48; anchor-left: 10; anchor-top: 10; anchor-bottom: 10;">
+                    <img src="Pages/LevelingCore/Per@2x.png" width="40" height="40"/>
+                </div>
+                <div style="layout-mode: top; flex-weight: 1;">
+                    <div style="layout: left;">
+                        <p style="padding-top: 10; padding-left: 10;">{{$perception}}</p>
+                        <p style="flex-weight:1"></p>
+                        <p style="padding-top: 10; font-size: 12; align: center; padding-right: 16; color: #87CE8B">
+                            +{{$perception_addition}}
+                        </p>
                     </div>
-                    <div style="layout-mode: top; background: #1e2d3d(0.5);">
-                        <p style="padding-left: 2; padding-top: 10; padding-left: 10">{{$perception}}</p>
-                        <p style="horizontal-align: center; padding-right: 20; padding-left: 10; padding-bottom: 10">{{$perception_desc}}</p>
-                    </div>
+                    <p style="padding-right: 20; padding-left: 10;">{{$perception_desc}}</p>
                 </div>
                 <div style="layout-mode: right">
                     <button id="AddPer5"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg5"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 6; {{#if available_points < 5}}visibility: hidden;{{/if}}">
-                        <div style="layout-mode: top; horizontal-align: center; vertical-align: center;">
-                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">+</p>
-                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">5</p>
+                        <div style="layout-mode: top; align: center;">
+                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">
+                                +
+                            </p>
+                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">
+                                5
+                            </p>
                         </div>
                     </button>
                     <button id="AddPer"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 10; {{#if available_points <= 0}}visibility: hidden;{{/if}}">
                         <p style="horizontal-align: center; font-size: 30">+</p>
                     </button>
                 </div>
             </div>
-            <div class="box">
-                <div style="layout-mode: left">
-                    <div>
-                        <img src="Pages/LevelingCore/vit@2x.png" width="48" height="48" style="padding-top: 10; padding-left: 10; padding-bottom: 10;"/>
+        </div>
+        <div class="box">
+            <div style="layout-mode: left">
+                <div style="background-color: rgba(22, 32, 43, 0.5) 2; anchor-height: 48; anchor-width: 48; anchor-left: 10; anchor-top: 10; anchor-bottom: 10;">
+                    <img src="Pages/LevelingCore/Vit@2x.png" width="40" height="40"/>
+                </div>
+                <div style="layout-mode: top; flex-weight: 1;">
+                    <div style="layout: left;">
+                        <p style="padding-top: 10; padding-left: 10;">{{$vitality}}</p>
+                        <p style="flex-weight:1"></p>
+                        <p style="padding-top: 10; font-size: 12; align: center; padding-right: 16; color: #87CE8B">
+                            +{{$playerHealthAddition}}
+                        </p>
                     </div>
-                    <div style="layout-mode: top; background: #1e2d3d(0.5);">
-                        <p style="padding-left: 2; padding-top: 10; padding-left: 10">{{$vitality}}</p>
-                        <p style="horizontal-align: center; padding-right: 20; padding-left: 10; padding-bottom: 10">{{$vitality_desc}}</p>
-                    </div>
+                    <p style="padding-right: 20; padding-left: 10;">{{$vitality_desc}}</p>
                 </div>
                 <div style="layout-mode: right">
                     <button id="AddVit5"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg5"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 6; {{#if available_points < 5}}visibility: hidden;{{/if}}">
-                        <div style="layout-mode: top; horizontal-align: center; vertical-align: center;">
-                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">+</p>
-                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">5</p>
+                        <div style="layout-mode: top; align: center;">
+                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">
+                                +
+                            </p>
+                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">
+                                5
+                            </p>
                         </div>
                     </button>
                     <button id="AddVit"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 10; {{#if available_points <= 0}}visibility: hidden;{{/if}}">
                         <p style="horizontal-align: center; font-size: 30">+</p>
                     </button>
                 </div>
             </div>
-            <div class="box">
-                <div style="layout-mode: left">
-                    <div>
-                        <img src="Pages/LevelingCore/int@2x.png" width="48" height="48" style="padding-top: 10; padding-left: 10; padding-bottom: 10;"/>
+        </div>
+        <div class="box">
+            <div style="layout-mode: left">
+                <div style="background-color: rgba(22, 32, 43, 0.5) 2; anchor-height: 48; anchor-width: 48; anchor-left: 10; anchor-top: 10; anchor-bottom: 10;">
+                    <img src="Pages/LevelingCore/Int@2x.png" width="40" height="40"/>
+                </div>
+                <div style="layout-mode: top; flex-weight: 1;">
+                    <div style="layout: left;">
+                        <p style="padding-top: 10; padding-left: 10;">{{$intelligence}}</p>
+                        <p style="flex-weight:1"></p>
+                        <p style="padding-top: 10; font-size: 12; align: center; padding-right: 16; color: #87CE8B">
+                            +{{$intelligence_addition}}
+                        </p>
                     </div>
-                    <div style="layout-mode: top; background: #1e2d3d(0.5);">
-                        <p style="padding-left: 2; padding-top: 10; padding-left: 10">{{$intelligence}}</p>
-                        <p style="horizontal-align: center; padding-right: 20; padding-left: 10; padding-bottom: 10">{{$intelligence_desc}}</p>
-                    </div>
+                    <p style="padding-right: 20; padding-left: 10;">{{$intelligence_desc}}</p>
                 </div>
                 <div style="layout-mode: right">
                     <button id="AddInt5"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg5"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 6; {{#if available_points < 5}}visibility: hidden;{{/if}}">
-                        <div style="layout-mode: top; horizontal-align: center; vertical-align: center;">
-                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">+</p>
-                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">5</p>
+                        <div style="layout-mode: top; align: center;">
+                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">
+                                +
+                            </p>
+                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">
+                                5
+                            </p>
                         </div>
                     </button>
                     <button id="AddInt"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 10; {{#if available_points <= 0}}visibility: hidden;{{/if}}">
                         <p style="horizontal-align: center; font-size: 30">+</p>
                     </button>
                 </div>
             </div>
-            <div class="box">
-                <div style="layout-mode: left">
-                    <div>
-                        <img src="Pages/LevelingCore/con@2x.png" width="48" height="48" style="padding-top: 10; padding-left: 10; padding-bottom: 10;"/>
+        </div>
+        <div class="box">
+            <div style="layout-mode: left">
+                <div style="background-color: rgba(22, 32, 43, 0.5) 2; anchor-height: 48; anchor-width: 48; anchor-left: 10; anchor-top: 10; anchor-bottom: 10;">
+                    <img src="Pages/LevelingCore/Con@2x.png" width="40" height="40"/>
+                </div>
+                <div style="layout-mode: top; flex-weight: 1;">
+                    <div style="layout: left;">
+                        <p style="padding-top: 10; padding-left: 10;">{{$constitution}}</p>
+                        <p style="flex-weight:1"></p>
+                        <p style="padding-top: 10; font-size: 12; align: center; padding-right: 16; color: #87CE8B">
+                            +{{$constitution_addition}}
+                        </p>
                     </div>
-                    <div style="layout-mode: top; background: #1e2d3d(0.5);">
-                        <p style="padding-left: 2; padding-top: 10; padding-left: 10">{{$constitution}}</p>
-                        <p style="horizontal-align: center; padding-right: 20; padding-left: 10; padding-bottom: 10">{{$constitution_desc}}</p>
-                    </div>
+                    <p style="padding-right: 20; padding-left: 10;">{{$constitution_desc}}</p>
                 </div>
                 <div style="layout-mode: right">
                     <button id="AddCon5"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg5"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 6; {{#if available_points < 5}}visibility: hidden;{{/if}}">
-                        <div style="layout-mode: top; horizontal-align: center; vertical-align: center;">
-                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">+</p>
-                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">5</p>
+                        <div style="layout-mode: top; align: center;">
+                            <p style="horizontal-align: center; font-size: 22; padding-top: 6; padding-left: -10;font-weight: bold;">
+                                +
+                            </p>
+                            <p style="horizontal-align: center; font-size: 16; padding-top: -25; padding-left: 15;font-weight: bold;">
+                                5
+                            </p>
                         </div>
                     </button>
                     <button id="AddCon"
                             class="custom-button"
-                            data-hyui-default-bg="@MyButtonBg"
                             style="anchor-width: 44; anchor-height: 44; padding-right: 10; {{#if available_points <= 0}}visibility: hidden;{{/if}}">
                         <p style="horizontal-align: center; font-size: 30">+</p>
                     </button>
@@ -222,4 +253,5 @@
             </div>
         </div>
     </div>
+</div>
 </div>
