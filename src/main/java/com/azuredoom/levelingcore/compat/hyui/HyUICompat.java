@@ -188,7 +188,7 @@ public class HyUICompat {
                 levelService.setAgi(uuid, levelService.getAgi(uuid) + 1);
                 levelService.useAbilityPoints(uuid, 1);
                 // Level / 2 * ( 1 + AGI * 0.01 )
-                var staminaMod = levelService.getLevel(uuid) / 2f * ( 1 + levelService.getAgi(uuid) * 0.01f);
+                var staminaMod = levelService.getLevel(uuid) / 2f * (1 + levelService.getAgi(uuid) * 0.01f);
                 var staminaModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
@@ -227,7 +227,7 @@ public class HyUICompat {
                 levelService.useAbilityPoints(uuid, 5);
 
                 // Level / 2 * ( 1 + AGI * 0.01 )
-                var staminaMod = levelService.getLevel(uuid) / 2f * ( 1 + levelService.getAgi(uuid) * 0.01f);
+                var staminaMod = levelService.getLevel(uuid) / 2f * (1 + levelService.getAgi(uuid) * 0.01f);
                 var staminaModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
@@ -299,7 +299,8 @@ public class HyUICompat {
                 levelService.setVit(uuid, levelService.getVit(uuid) + 1);
                 levelService.useAbilityPoints(uuid, 1);
                 // ( Level * 10 + ( Level / 2 )) * ( 1 + VIT * 0.01 )
-                var healthMod = (levelService.getLevel(uuid) * 10 + ( levelService.getLevel(uuid) / 2 )) * ( 1 + levelService.getVit(uuid) * 0.01f);
+                var healthMod = (levelService.getLevel(uuid) * 10 + (levelService.getLevel(uuid) / 2)) * (1
+                    + levelService.getVit(uuid) * 0.01f);
                 var healthModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
@@ -330,7 +331,8 @@ public class HyUICompat {
 
                 levelService.setVit(uuid, levelService.getVit(uuid) + 5);
                 levelService.useAbilityPoints(uuid, 5);
-                var healthMod = (levelService.getLevel(uuid) * 10 + ( levelService.getLevel(uuid) / 2 )) * ( 1 + levelService.getVit(uuid) * 0.01f);
+                var healthMod = (levelService.getLevel(uuid) * 10 + (levelService.getLevel(uuid) / 2)) * (1
+                    + levelService.getVit(uuid) * 0.01f);
                 var healthModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
@@ -364,7 +366,8 @@ public class HyUICompat {
                 levelService.setInt(uuid, levelService.getInt(uuid) + 1);
                 levelService.useAbilityPoints(uuid, 1);
                 // ( Level * 10 + ( Level / 2 )) * ( 1 + INT * 0.01 )
-                var manaMod = (levelService.getLevel(uuid) * 10 + ( levelService.getLevel(uuid) / 2 )) * ( 1 + levelService.getInt(uuid) * 0.01f);
+                var manaMod = (levelService.getLevel(uuid) * 10 + (levelService.getLevel(uuid) / 2)) * (1 + levelService
+                    .getInt(uuid) * 0.01f);
                 var manaModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
@@ -393,7 +396,8 @@ public class HyUICompat {
                 levelService.setInt(uuid, levelService.getInt(uuid) + 5);
                 levelService.useAbilityPoints(uuid, 5);
                 // ( Level * 10 + ( Level / 2 )) * ( 1 + INT * 0.01 )
-                var manaMod = (levelService.getLevel(uuid) * 10 + ( levelService.getLevel(uuid) / 2 )) * ( 1 + levelService.getInt(uuid) * 0.01f);
+                var manaMod = (levelService.getLevel(uuid) * 10 + (levelService.getLevel(uuid) / 2)) * (1 + levelService
+                    .getInt(uuid) * 0.01f);
                 var manaModifier = new StaticModifier(
                     Modifier.ModifierTarget.MAX,
                     StaticModifier.CalculationType.ADDITIVE,
