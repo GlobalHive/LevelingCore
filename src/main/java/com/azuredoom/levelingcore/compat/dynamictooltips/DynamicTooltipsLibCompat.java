@@ -22,8 +22,7 @@ public class DynamicTooltipsLibCompat {
         for (var entry : LevelingCore.itemLevelMapping.entrySet()) {
             var itemId = entry.getKey();
             var requiredLevel = entry.getValue();
-
-            api.addGlobalLine(itemId, "Required Level: " + requiredLevel);
+            api.addGlobalLine(itemId, "<color is=\"#b5a077\">Required Level: " + requiredLevel + " </color>");
             // api.addGlobalLine(itemId, CommandLang.REQUIRED_LEVEL.param("level", requiredLevel).toString());
         }
     }
