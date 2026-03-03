@@ -19,6 +19,7 @@ import javax.annotation.Nonnull;
 
 import com.azuredoom.levelingcore.api.LevelingCoreApi;
 import com.azuredoom.levelingcore.commands.*;
+import com.azuredoom.levelingcore.compat.dynamictooltips.DynamicTooltipsLibCompat;
 import com.azuredoom.levelingcore.compat.placeholderapi.PlaceholderAPICompat;
 import com.azuredoom.levelingcore.compat.placeholderlib.PlaceholderLibCompat;
 import com.azuredoom.levelingcore.config.GUIConfig;
@@ -172,6 +173,8 @@ public class LevelingCore extends JavaPlugin {
                                 levelService.setAbilityPoints(uuid, Math.max(0, targetTotal));
                             }
                         });
+                        if (LevelingCore.getConfig().get().isEnableItemLevelRestriction())
+                            LevelingCore.equipBlockManager.validateArmorOnReady(player);
                     }
                     HudPlayerReady.ready(playerReadyEvent, config);
                 })
@@ -193,9 +196,12 @@ public class LevelingCore extends JavaPlugin {
          * @Override public boolean cancel(boolean mayInterruptIfRunning) { scheduled.cancel(mayInterruptIfRunning);
          * return super.cancel(mayInterruptIfRunning); } }; this.getTaskRegistry().registerTask(task);
          * LevelingCore.mobLevelPersistence.load();*/
-        if (LevelingCore.getConfig().get().isEnableItemLevelRestriction())
+        if (LevelingCore.getConfig().get().isEnableItemLevelRestriction()){
             LevelingCore.equipBlockManager.start();
-         
+        }
+        if (PluginManager.get().getPlugin(new PluginIdentifier("org.herolias", "DynamicTooltipsLib")) != null) {
+            DynamicTooltipsLibCompat.register();
+        }
     }
 
     /**

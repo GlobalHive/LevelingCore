@@ -23,7 +23,9 @@
         "Ellie:HyUI": "*",
         "AutoMultiHud:AutoMultiHud": "*",
         "HelpChat:PlaceholderAPI": ">= 1.0.4",
-        "PlaceholderLib:PlaceholderLib": "*"
+        "PlaceholderLib:PlaceholderLib": "*",
+        "org.herolias:DynamicTooltipsLib": "*",
+        "IwakuraEnterprises:Voile": "*"
     },
     "DisabledByDefault": false,
     "Main": "com.azuredoom.levelingcore.LevelingCore",
