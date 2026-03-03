@@ -195,8 +195,9 @@ public class LevelingCore extends JavaPlugin {
          * var task = new CompletableFuture<Void>() {
          * @Override public boolean cancel(boolean mayInterruptIfRunning) { scheduled.cancel(mayInterruptIfRunning);
          * return super.cancel(mayInterruptIfRunning); } }; this.getTaskRegistry().registerTask(task);
-         * LevelingCore.mobLevelPersistence.load();*/
-        if (LevelingCore.getConfig().get().isEnableItemLevelRestriction()){
+         * LevelingCore.mobLevelPersistence.load();
+         */
+        if (LevelingCore.getConfig().get().isEnableItemLevelRestriction()) {
             LevelingCore.equipBlockManager.start();
         }
         if (PluginManager.get().getPlugin(new PluginIdentifier("org.herolias", "DynamicTooltipsLib")) != null) {
