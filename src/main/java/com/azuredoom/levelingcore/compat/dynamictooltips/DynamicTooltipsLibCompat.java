@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,12 +26,22 @@ public class DynamicTooltipsLibCompat {
 
     private static boolean registered = false;
 
+    private static final int MAX_CRAWL_DEPTH = 8;
+
+    private static final Timer SCAN_TIMER = new Timer("levelingcore-dynamic-tooltips", true);
+
     private static final Pattern XRAY_PATTERN = Pattern.compile(
         "(?:\"|'|\\b)(Physical|Magical|Void|True|Poison|Fire|Ice|Wind|Earth|Water|Lightning|Elemental)(?:\"|'|\\b)\\s*[:=]\\s*(\\d+)",
-        2
+        Pattern.CASE_INSENSITIVE
     );
 
     private final Set<String> processedItems = ConcurrentHashMap.newKeySet();
+
+    private final Map<Class<?>, Field> bufferFieldCache = new ConcurrentHashMap<>();
+
+    private final Set<Class<?>> noBufferFieldCache = ConcurrentHashMap.newKeySet();
+
+    private final Map<Class<?>, Field[]> declaredFieldsCache = new ConcurrentHashMap<>();
 
     public static final DynamicTooltipsLibCompat INSTANCE = new DynamicTooltipsLibCompat();
 
@@ -51,23 +62,16 @@ public class DynamicTooltipsLibCompat {
             api.addGlobalLine(itemId, "<color is=\"#b5a077\">Required Level: " + requiredLevel + " </color>");
         }
 
-        new Timer().schedule(new TimerTask() {
+        SCAN_TIMER.schedule(new TimerTask() {
 
             {
                 Objects.requireNonNull(DynamicTooltipsLibCompat.INSTANCE);
             }
 
             public void run() {
-                try {
-                    int itemCount = Item.getAssetMap() != null ? Item.getAssetMap().getAssetMap().size() : 0;
-                    if (itemCount < 100) {
-                        return;
-                    }
-
-                    DynamicTooltipsLibCompat.INSTANCE.scanWeapons();
-                } catch (Exception var2) {}
+                DynamicTooltipsLibCompat.INSTANCE.scanWeapons();
             }
-        }, 1000L, 1000L);
+        }, 10000L);
     }
 
     private void scanWeapons() {
@@ -75,16 +79,26 @@ public class DynamicTooltipsLibCompat {
             var allItems = Item.getAssetMap().getAssetMap().values();
 
             for (Item item : allItems) {
-                if (!this.processedItems.contains(item.getId()) && this.hasWeaponTag(item)) {
-                    List<Integer> damages = this.getDamagesFromBuffer(item);
-                    if (damages.isEmpty()) {
-                        this.processedItems.add(item.getId());
-                    } else if (this.processItem(item, damages)) {
-                        this.processedItems.add(item.getId());
-                    }
+                String itemId = item.getId();
+                if (itemId == null || this.processedItems.contains(itemId)) {
+                    continue;
+                }
+
+                if (!this.hasWeaponTag(item)) {
+                    this.processedItems.add(itemId);
+                    continue;
+                }
+
+                List<Integer> damages = this.getDamagesFromBuffer(item);
+                if (damages.isEmpty() || this.processItem(item, damages)) {
+                    this.processedItems.add(itemId);
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            LevelingCore.LOGGER.at(Level.FINE)
+                .withCause(e)
+                .log("Dynamic tooltips weapon scan failed");
+        }
     }
 
     private boolean processItem(Item item, List<Integer> damages) {
@@ -96,20 +110,23 @@ public class DynamicTooltipsLibCompat {
             if (!damages.isEmpty()) {
                 StringBuilder text = new StringBuilder();
 
-                int min = (Integer) damages.get(0);
-                int max = (Integer) damages.get(damages.size() - 1);
+                int min = damages.get(0);
+                int max = damages.get(damages.size() - 1);
                 text.append(String.format("<color is=\"#b5a077\">Weapon Level: %d</color>\n", item.getItemLevel()));
                 text.append(String.format("<color is=\"#b5a077\">Weapon Damage: %d - %d</color>", min, max));
                 api.addGlobalLine(item.getId(), text.toString());
             }
             return true;
-        } catch (Exception var12) {
+        } catch (Exception e) {
+            LevelingCore.LOGGER.at(Level.FINE)
+                .withCause(e)
+                .log("Failed to process tooltip for item " + item.getId());
             return false;
         }
     }
 
     private List<Integer> getDamagesFromBuffer(Item item) {
-        List<Integer> damages = new ArrayList();
+        List<Integer> damages = new ArrayList<>();
         StringBuilder hugeDump = new StringBuilder();
 
         try {
@@ -122,17 +139,25 @@ public class DynamicTooltipsLibCompat {
                     if (val > 0) {
                         damages.add(val);
                     }
-                } catch (Exception var6) {}
+                } catch (NumberFormatException ignored) {}
             }
-        } catch (Exception var7) {}
+        } catch (Exception e) {
+            LevelingCore.LOGGER.at(Level.FINE)
+                .withCause(e)
+                .log("Failed to extract weapon damage from item " + item.getId());
+        }
 
         Collections.sort(damages);
         return damages;
     }
 
     private void crawlAndExtractText(Object obj, StringBuilder sb, int depth) {
-        if (obj != null && depth <= 8) {
+        if (obj != null && depth <= MAX_CRAWL_DEPTH) {
             try {
+                if (isSimpleValue(obj.getClass())) {
+                    return;
+                }
+
                 Field bufField = this.getField(obj.getClass(), "buffer");
                 if (bufField != null) {
                     Object buf = bufField.get(obj);
@@ -146,11 +171,11 @@ public class DynamicTooltipsLibCompat {
                 }
 
                 if (obj instanceof Map) {
-                    for (Object val : ((Map) obj).values()) {
+                    for (Object val : ((Map<?, ?>) obj).values()) {
                         this.crawlAndExtractText(val, sb, depth + 1);
                     }
                 } else if (obj instanceof Iterable) {
-                    for (Object val : (Iterable) obj) {
+                    for (Object val : (Iterable<?>) obj) {
                         this.crawlAndExtractText(val, sb, depth + 1);
                     }
                 } else if (obj.getClass().isArray()) {
@@ -160,16 +185,24 @@ public class DynamicTooltipsLibCompat {
                         this.crawlAndExtractText(Array.get(obj, i), sb, depth + 1);
                     }
                 } else if (this.isComplex(obj.getClass())) {
-                    for (Field f : obj.getClass().getDeclaredFields()) {
+                    for (Field f : getDeclaredFields(obj.getClass())) {
                         if (!Modifier.isStatic(f.getModifiers())) {
-                            f.setAccessible(true);
                             this.crawlAndExtractText(f.get(obj), sb, depth + 1);
                         }
                     }
                 }
-            } catch (Exception var9) {}
+            } catch (Exception e) {
+                LevelingCore.LOGGER.at(Level.FINER)
+                    .withCause(e)
+                    .log("Failed reflection crawl while extracting item damage text");
+            }
 
         }
+    }
+
+    private boolean isSimpleValue(Class<?> c) {
+        return c == String.class || Number.class.isAssignableFrom(c) || c == Boolean.class || c == Character.class
+            || c == Class.class;
     }
 
     private boolean isComplex(Class<?> c) {
@@ -187,6 +220,25 @@ public class DynamicTooltipsLibCompat {
     }
 
     private Field getField(Class<?> clazz, String name) {
+        Field cachedField = bufferFieldCache.get(clazz);
+        if (cachedField != null) {
+            return cachedField;
+        }
+        if (noBufferFieldCache.contains(clazz)) {
+            return null;
+        }
+
+        Field foundField = findField(clazz, name);
+        if (foundField != null) {
+            bufferFieldCache.put(clazz, foundField);
+            return foundField;
+        }
+
+        noBufferFieldCache.add(clazz);
+        return null;
+    }
+
+    private Field findField(Class<?> clazz, String name) {
         while (clazz != null) {
             try {
                 Field f = clazz.getDeclaredField(name);
@@ -196,8 +248,17 @@ public class DynamicTooltipsLibCompat {
                 clazz = clazz.getSuperclass();
             }
         }
-
         return null;
+    }
+
+    private Field[] getDeclaredFields(Class<?> clazz) {
+        return declaredFieldsCache.computeIfAbsent(clazz, c -> {
+            Field[] fields = c.getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+            }
+            return fields;
+        });
     }
 
 }
