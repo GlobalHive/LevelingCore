@@ -47,8 +47,6 @@ import com.azuredoom.levelingcore.systems.items.HandGateTickingSystem;
 import com.azuredoom.levelingcore.systems.items.ItemBlockPacketManager;
 import com.azuredoom.levelingcore.systems.level.LevelDownTickingSystem;
 import com.azuredoom.levelingcore.systems.level.LevelUpTickingSystem;
-import com.azuredoom.levelingcore.systems.xp.GainXPEventSystem;
-import com.azuredoom.levelingcore.systems.xp.LossXPEventSystem;
 import com.azuredoom.levelingcore.ui.hud.XPBarHud;
 import com.azuredoom.levelingcore.utils.HudPlayerReady;
 import com.azuredoom.levelingcore.utils.LevelDownListenerRegistrar;
@@ -183,8 +181,6 @@ public class LevelingCore extends JavaPlugin {
                     HudPlayerReady.ready(playerReadyEvent, config);
                 })
             );
-        // this.getEntityStoreRegistry().registerSystem(new PlayerDamageFilter(config));
-        // this.getEntityStoreRegistry().registerSystem(new MobDamageFilter(config));
         // Cleans up various weak hash maps and UI on player disconnect
         this.getEventRegistry()
             .registerGlobal(PlayerDisconnectEvent.class, (event) -> {
@@ -193,14 +189,6 @@ public class LevelingCore extends JavaPlugin {
                 LevelDownListenerRegistrar.clear(event.getPlayerRef().getUuid());
             });
 
-        /*
-         * var showLvlHeadSystem = new ShowLvlHeadSystem(config); var scheduled =
-         * HytaleServer.SCHEDULED_EXECUTOR.scheduleWithFixedDelay( showLvlHeadSystem, 0L, 250L, TimeUnit.MILLISECONDS );
-         * var task = new CompletableFuture<Void>() {
-         * @Override public boolean cancel(boolean mayInterruptIfRunning) { scheduled.cancel(mayInterruptIfRunning);
-         * return super.cancel(mayInterruptIfRunning); } }; this.getTaskRegistry().registerTask(task);
-         * LevelingCore.mobLevelPersistence.load();
-         */
         if (LevelingCore.getConfig().get().isEnableItemLevelRestriction()) {
             LevelingCore.equipBlockManager.start();
             LevelingCore.itemBlockPacketManager.start();
@@ -219,8 +207,7 @@ public class LevelingCore extends JavaPlugin {
      */
     @Override
     protected void shutdown() {
-        // LevelingCore.mobLevelPersistence.save();
-        if (LevelingCore.getConfig().get().isEnableItemLevelRestriction()){
+        if (LevelingCore.getConfig().get().isEnableItemLevelRestriction()) {
             LevelingCore.equipBlockManager.shutdown();
             LevelingCore.itemBlockPacketManager.shutdown();
         }
@@ -271,10 +258,7 @@ public class LevelingCore extends JavaPlugin {
         getEntityStoreRegistry().registerSystem(
             new HandGateTickingSystem(LevelingCore.itemBlockPacketManager.getHandGate())
         );
-        getEntityStoreRegistry().registerSystem(new MobLevelSystem(config));
         getEntityStoreRegistry().registerSystem(new LevelUpTickingSystem(config));
         getEntityStoreRegistry().registerSystem(new LevelDownTickingSystem(config));
-        getEntityStoreRegistry().registerSystem(new GainXPEventSystem(config));
-        getEntityStoreRegistry().registerSystem(new LossXPEventSystem(config));
     }
 }
