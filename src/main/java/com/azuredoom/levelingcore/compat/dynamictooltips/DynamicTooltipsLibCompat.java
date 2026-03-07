@@ -8,8 +8,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -56,12 +57,6 @@ public class DynamicTooltipsLibCompat {
         if (api == null)
             return;
 
-        for (var entry : LevelingCore.itemLevelMapping.entrySet()) {
-            var itemId = entry.getKey();
-            var requiredLevel = entry.getValue();
-            api.addGlobalLine(itemId, "<color is=\"#b5a077\">Required Level: " + requiredLevel + " </color>");
-        }
-
         SCAN_TIMER.schedule(new TimerTask() {
 
             {
@@ -70,6 +65,14 @@ public class DynamicTooltipsLibCompat {
 
             public void run() {
                 DynamicTooltipsLibCompat.INSTANCE.scanWeapons();
+                for (var entry : LevelingCore.itemLevelMapping.entrySet()) {
+                    var itemId = entry.getKey();
+                    var requiredLevel = entry.getValue();
+                    api.addGlobalLine(
+                        itemId,
+                        "\n<color is=\"#b5a077\">Required Level: " + requiredLevel + " </color>"
+                    );
+                }
             }
         }, 10000L);
     }
@@ -89,8 +92,8 @@ public class DynamicTooltipsLibCompat {
                     continue;
                 }
 
-                List<Integer> damages = this.getDamagesFromBuffer(item);
-                if (damages.isEmpty() || this.processItem(item, damages)) {
+                Map<String, List<Integer>> damagesByType = this.getDamagesByTypeFromBuffer(item);
+                if (damagesByType.isEmpty() || this.processItem(item, damagesByType)) {
                     this.processedItems.add(itemId);
                 }
             }
@@ -101,19 +104,30 @@ public class DynamicTooltipsLibCompat {
         }
     }
 
-    private boolean processItem(Item item, List<Integer> damages) {
+    private boolean processItem(Item item, Map<String, List<Integer>> damagesByType) {
         var api = DynamicTooltipsApiProvider.get();
         if (api == null)
             return false;
 
         try {
-            if (!damages.isEmpty()) {
+            if (!damagesByType.isEmpty()) {
                 StringBuilder text = new StringBuilder();
 
-                int min = damages.get(0);
-                int max = damages.get(damages.size() - 1);
                 text.append(String.format("<color is=\"#b5a077\">Weapon Level: %d</color>\n", item.getItemLevel()));
-                text.append(String.format("<color is=\"#b5a077\">Weapon Damage: %d - %d</color>", min, max));
+                int i = 0;
+                for (Map.Entry<String, List<Integer>> entry : damagesByType.entrySet()) {
+                    List<Integer> values = entry.getValue();
+                    if (values.isEmpty()) {
+                        continue;
+                    }
+
+                    int min = values.get(0);
+                    int max = values.get(values.size() - 1);
+                    if (i++ > 0) {
+                        text.append("\n");
+                    }
+                    text.append(String.format("<color is=\"#b5a077\">%s: %d - %d</color>", entry.getKey(), min, max));
+                }
                 api.addGlobalLine(item.getId(), text.toString());
             }
             return true;
@@ -125,8 +139,8 @@ public class DynamicTooltipsLibCompat {
         }
     }
 
-    private List<Integer> getDamagesFromBuffer(Item item) {
-        List<Integer> damages = new ArrayList<>();
+    private Map<String, List<Integer>> getDamagesByTypeFromBuffer(Item item) {
+        Map<String, List<Integer>> damagesByType = new LinkedHashMap<>();
         StringBuilder hugeDump = new StringBuilder();
 
         try {
@@ -135,9 +149,10 @@ public class DynamicTooltipsLibCompat {
 
             while (m.find()) {
                 try {
+                    String damageType = this.normalizeDamageType(m.group(1));
                     int val = Integer.parseInt(m.group(2));
                     if (val > 0) {
-                        damages.add(val);
+                        damagesByType.computeIfAbsent(damageType, key -> new ArrayList<>()).add(val);
                     }
                 } catch (NumberFormatException ignored) {}
             }
@@ -147,8 +162,19 @@ public class DynamicTooltipsLibCompat {
                 .log("Failed to extract weapon damage from item " + item.getId());
         }
 
-        Collections.sort(damages);
-        return damages;
+        for (List<Integer> values : damagesByType.values()) {
+            values.sort(Integer::compareTo);
+        }
+
+        return damagesByType;
+    }
+
+    private String normalizeDamageType(String rawType) {
+        if (rawType == null || rawType.isEmpty()) {
+            return "Unknown";
+        }
+
+        return rawType.substring(0, 1).toUpperCase(Locale.ROOT) + rawType.substring(1).toLowerCase(Locale.ROOT);
     }
 
     private void crawlAndExtractText(Object obj, StringBuilder sb, int depth) {
