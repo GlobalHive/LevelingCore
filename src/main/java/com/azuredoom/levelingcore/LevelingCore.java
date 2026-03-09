@@ -19,6 +19,14 @@ import javax.annotation.Nonnull;
 
 import com.azuredoom.levelingcore.api.LevelingCoreApi;
 import com.azuredoom.levelingcore.commands.*;
+import com.azuredoom.levelingcore.commands.level.AddLevelCommand;
+import com.azuredoom.levelingcore.commands.level.RemoveLevelCommand;
+import com.azuredoom.levelingcore.commands.level.SetLevelCommand;
+import com.azuredoom.levelingcore.commands.stats.AddStatsCommand;
+import com.azuredoom.levelingcore.commands.stats.RemoveStatsCommand;
+import com.azuredoom.levelingcore.commands.stats.SetStatsCommand;
+import com.azuredoom.levelingcore.commands.xp.AddXpCommand;
+import com.azuredoom.levelingcore.commands.xp.RemoveXpCommand;
 import com.azuredoom.levelingcore.compat.dynamictooltips.DynamicTooltipsLibCompat;
 import com.azuredoom.levelingcore.compat.placeholderapi.PlaceholderAPICompat;
 import com.azuredoom.levelingcore.compat.placeholderlib.PlaceholderLibCompat;
@@ -252,6 +260,9 @@ public class LevelingCore extends JavaPlugin {
         getCommandRegistry().registerCommand(new RemoveLevelCommand(config));
         getCommandRegistry().registerCommand(new RemoveXpCommand(config));
         getCommandRegistry().registerCommand(new ShowStatsCommand(config));
+        getCommandRegistry().registerCommand(new AddStatsCommand());
+        getCommandRegistry().registerCommand(new RemoveStatsCommand());
+        getCommandRegistry().registerCommand(new SetStatsCommand());
     }
 
     public void registerAllSystems() {
