@@ -31,7 +31,7 @@ public class DynamicTooltipsLibCompat {
 
     private static final Timer SCAN_TIMER = new Timer("levelingcore-dynamic-tooltips", true);
 
-    private static final Pattern XRAY_PATTERN = Pattern.compile(
+    private static final Pattern CRAWL_PATTERN = Pattern.compile(
         "(?:\"|'|\\b)(Physical|Magical|Void|True|Poison|Fire|Ice|Wind|Earth|Water|Lightning|Elemental)(?:\"|'|\\b)\\s*[:=]\\s*(\\d+)",
         Pattern.CASE_INSENSITIVE
     );
@@ -68,7 +68,7 @@ public class DynamicTooltipsLibCompat {
             }
 
             public void run() {
-                DynamicTooltipsLibCompat.INSTANCE.scanWeapons();
+                DynamicTooltipsLibCompat.INSTANCE.scanForWeapons();
                 for (var entry : LevelingCore.itemLevelMapping.entrySet()) {
                     var itemId = entry.getKey();
                     var requiredLevel = entry.getValue();
@@ -81,7 +81,7 @@ public class DynamicTooltipsLibCompat {
         }, 10000L);
     }
 
-    private void scanWeapons() {
+    private void scanForWeapons() {
         try {
             var allItems = Item.getAssetMap().getAssetMap().values();
 
@@ -102,7 +102,7 @@ public class DynamicTooltipsLibCompat {
                 }
             }
         } catch (Exception e) {
-            LevelingCore.LOGGER.at(Level.FINE)
+            LevelingCore.LOGGER.at(Level.WARNING)
                 .withCause(e)
                 .log("Dynamic tooltips weapon scan failed");
         }
@@ -136,7 +136,7 @@ public class DynamicTooltipsLibCompat {
             }
             return true;
         } catch (Exception e) {
-            LevelingCore.LOGGER.at(Level.FINE)
+            LevelingCore.LOGGER.at(Level.WARNING)
                 .withCause(e)
                 .log("Failed to process tooltip for item " + item.getId());
             return false;
@@ -145,11 +145,11 @@ public class DynamicTooltipsLibCompat {
 
     private Map<String, List<Integer>> getDamagesByTypeFromBuffer(Item item) {
         Map<String, List<Integer>> damagesByType = new LinkedHashMap<>();
-        StringBuilder hugeDump = new StringBuilder();
+        StringBuilder bufferDump = new StringBuilder();
 
         try {
-            this.crawlAndExtractText(item, hugeDump, 0);
-            Matcher m = XRAY_PATTERN.matcher(hugeDump.toString());
+            this.crawlBufferText(item, bufferDump, 0);
+            Matcher m = CRAWL_PATTERN.matcher(bufferDump.toString());
 
             while (m.find()) {
                 try {
@@ -161,7 +161,7 @@ public class DynamicTooltipsLibCompat {
                 } catch (NumberFormatException ignored) {}
             }
         } catch (Exception e) {
-            LevelingCore.LOGGER.at(Level.FINE)
+            LevelingCore.LOGGER.at(Level.WARNING)
                 .withCause(e)
                 .log("Failed to extract weapon damage from item " + item.getId());
         }
@@ -181,7 +181,7 @@ public class DynamicTooltipsLibCompat {
         return rawType.substring(0, 1).toUpperCase(Locale.ROOT) + rawType.substring(1).toLowerCase(Locale.ROOT);
     }
 
-    private void crawlAndExtractText(Object obj, StringBuilder sb, int depth) {
+    private void crawlBufferText(Object obj, StringBuilder sb, int depth) {
         if (obj != null && depth <= MAX_CRAWL_DEPTH) {
             try {
                 if (isSimpleValue(obj.getClass())) {
@@ -202,27 +202,27 @@ public class DynamicTooltipsLibCompat {
 
                 if (obj instanceof Map) {
                     for (Object val : ((Map<?, ?>) obj).values()) {
-                        this.crawlAndExtractText(val, sb, depth + 1);
+                        this.crawlBufferText(val, sb, depth + 1);
                     }
                 } else if (obj instanceof Iterable) {
                     for (Object val : (Iterable<?>) obj) {
-                        this.crawlAndExtractText(val, sb, depth + 1);
+                        this.crawlBufferText(val, sb, depth + 1);
                     }
                 } else if (obj.getClass().isArray()) {
                     int len = Array.getLength(obj);
 
                     for (int i = 0; i < len; ++i) {
-                        this.crawlAndExtractText(Array.get(obj, i), sb, depth + 1);
+                        this.crawlBufferText(Array.get(obj, i), sb, depth + 1);
                     }
                 } else if (this.isComplex(obj.getClass())) {
                     for (Field f : getDeclaredFields(obj.getClass())) {
                         if (!Modifier.isStatic(f.getModifiers())) {
-                            this.crawlAndExtractText(f.get(obj), sb, depth + 1);
+                            this.crawlBufferText(f.get(obj), sb, depth + 1);
                         }
                     }
                 }
             } catch (Exception e) {
-                LevelingCore.LOGGER.at(Level.FINER)
+                LevelingCore.LOGGER.at(Level.WARNING)
                     .withCause(e)
                     .log("Failed reflection crawl while extracting item damage text");
             }
