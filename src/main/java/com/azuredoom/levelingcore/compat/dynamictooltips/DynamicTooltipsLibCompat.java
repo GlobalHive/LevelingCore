@@ -61,6 +61,7 @@ public class DynamicTooltipsLibCompat {
         if (api == null)
             return;
 
+        // Wait for 10 seconds before scanning to ensure all items are loaded, then add tooltips for required levels & weapon damages
         SCAN_TIMER.schedule(new TimerTask() {
 
             {
@@ -226,7 +227,6 @@ public class DynamicTooltipsLibCompat {
                     .withCause(e)
                     .log("Failed reflection crawl while extracting item damage text");
             }
-
         }
     }
 
