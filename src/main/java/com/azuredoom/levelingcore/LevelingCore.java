@@ -269,6 +269,11 @@ public class LevelingCore extends JavaPlugin {
         getEntityStoreRegistry().registerSystem(
             new HandGateTickingSystem(LevelingCore.itemBlockPacketManager.getHandGate())
         );
+        if (LevelingCore.getConfig().get().isEnableItemLevelRestriction()) {
+            getEntityStoreRegistry().registerSystem(
+                new EquipBlockManager.ArmorInventoryChangeSystem(LevelingCore.equipBlockManager)
+            );
+        }
         getEntityStoreRegistry().registerSystem(new LevelUpTickingSystem(config));
         getEntityStoreRegistry().registerSystem(new LevelDownTickingSystem(config));
     }

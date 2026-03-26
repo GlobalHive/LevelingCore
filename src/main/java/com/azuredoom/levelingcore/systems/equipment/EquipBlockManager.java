@@ -1,10 +1,15 @@
 package com.azuredoom.levelingcore.systems.equipment;
 
-import com.hypixel.hytale.event.EventRegistration;
+import com.hypixel.hytale.component.ArchetypeChunk;
+import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.component.query.Query;
+import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.entity.ItemUtils;
 import com.hypixel.hytale.server.core.entity.entities.Player;
-import com.hypixel.hytale.server.core.event.events.entity.LivingEntityInventoryChangeEvent;
+import com.hypixel.hytale.server.core.inventory.InventoryChangeEvent;
+import com.hypixel.hytale.server.core.inventory.InventoryComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
 import com.hypixel.hytale.server.core.inventory.transaction.ItemStackTransaction;
@@ -13,6 +18,7 @@ import com.hypixel.hytale.server.core.inventory.transaction.MoveTransaction;
 import com.hypixel.hytale.server.core.inventory.transaction.MoveType;
 import com.hypixel.hytale.server.core.inventory.transaction.SlotTransaction;
 import com.hypixel.hytale.server.core.inventory.transaction.Transaction;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,28 +32,13 @@ import com.azuredoom.levelingcore.utils.NotificationsUtil;
 @SuppressWarnings("removal")
 public class EquipBlockManager {
 
-    @Nullable
-    private volatile EventRegistration<?, LivingEntityInventoryChangeEvent> inventoryChangeRegistration;
-
     private final Set<UUID> ignoreArmorEvents = ConcurrentHashMap.newKeySet();
 
     private volatile boolean restoringArmor = false;
 
-    public void start() {
-        if (inventoryChangeRegistration == null || !inventoryChangeRegistration.isRegistered()) {
-            inventoryChangeRegistration = LevelingCore.getInstance()
-                .getEventRegistry()
-                .registerGlobal(LivingEntityInventoryChangeEvent.class, this::onInventoryChange);
-        }
-    }
+    public void start() {}
 
-    public void shutdown() {
-        EventRegistration<?, LivingEntityInventoryChangeEvent> inventoryRegistration = inventoryChangeRegistration;
-        if (inventoryRegistration != null && inventoryRegistration.isRegistered()) {
-            inventoryRegistration.unregister();
-        }
-        inventoryChangeRegistration = null;
-    }
+    public void shutdown() {}
 
     /**
      * Validates the armor equipped by the player to ensure they meet the required level criteria. Removes any armor
@@ -105,12 +96,17 @@ public class EquipBlockManager {
      * @param event the inventory change event that contains context about the entity, transaction, and the affected
      *              inventory container
      */
-    private void onInventoryChange(@Nonnull LivingEntityInventoryChangeEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
+    void onInventoryChange(@Nonnull Player player, @Nonnull InventoryChangeEvent event) {
+        if (!(event.getInventory() instanceof InventoryComponent.Armor)) {
             return;
         }
 
         if (restoringArmor) {
+            return;
+        }
+
+        var changedContainer = event.getItemContainer();
+        if (changedContainer == null) {
             return;
         }
 
@@ -120,12 +116,7 @@ public class EquipBlockManager {
 
         var inventory = player.getInventory();
         var armorContainer = inventory.getArmor();
-        if (armorContainer == null) {
-            return;
-        }
-
-        var changedContainer = event.getItemContainer();
-        if (changedContainer == null || changedContainer != armorContainer) {
+        if (armorContainer == null || changedContainer != armorContainer) {
             return;
         }
 
@@ -139,6 +130,42 @@ public class EquipBlockManager {
             rollbackArmorTransaction(player, armorContainer, transaction, new HashSet<>());
         } finally {
             restoringArmor = false;
+        }
+    }
+
+    public static class ArmorInventoryChangeSystem extends EntityEventSystem<EntityStore, InventoryChangeEvent> {
+
+        private final EquipBlockManager equipBlockManager;
+
+        public ArmorInventoryChangeSystem(@Nonnull EquipBlockManager equipBlockManager) {
+            super(InventoryChangeEvent.class);
+            this.equipBlockManager = equipBlockManager;
+        }
+
+        @Override
+        public void handle(
+            int index,
+            @Nonnull ArchetypeChunk<EntityStore> archetypeChunk,
+            @Nonnull Store<EntityStore> store,
+            @Nonnull CommandBuffer<EntityStore> commandBuffer,
+            @Nonnull InventoryChangeEvent event
+        ) {
+            if (!LevelingCore.getConfig().get().isEnableItemLevelRestriction()) {
+                return;
+            }
+
+            var player = archetypeChunk.getComponent(index, Player.getComponentType());
+            if (player == null) {
+                return;
+            }
+
+            equipBlockManager.onInventoryChange(player, event);
+        }
+
+        @Nullable
+        @Override
+        public Query<EntityStore> getQuery() {
+            return Player.getComponentType();
         }
     }
 
